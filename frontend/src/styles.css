@@ -201,6 +201,18 @@ select {
   gap: 10px;
 }
 
+.order-items {
+  display: grid;
+  gap: 12px;
+}
+
+.order-item-row {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) 120px auto;
+}
+
 .form-panel {
   display: grid;
   gap: 14px;
@@ -378,7 +390,8 @@ th {
   .stat-grid,
   .detail-grid,
   .dashboard-grid,
-  .grid-two {
+  .grid-two,
+  .order-item-row {
     grid-template-columns: 1fr;
   }
 }

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 
 import { getApiError } from "../api/client";
 import { getCustomers } from "../api/customers";
@@ -14,20 +14,21 @@ import useAsyncData from "../hooks/useAsyncData";
 
 const defaultValues = {
   customer_id: "",
-  product_id: "",
-  quantity: 1,
+  items: [{ product_id: "", quantity: 1 }],
 };
 
 export default function Orders() {
   const { data: orders, loading, error, reload } = useAsyncData(getOrders, []);
   const { data: customers } = useAsyncData(getCustomers, []);
-  const { data: products } = useAsyncData(getProducts, []);
+  const { data: products, reload: reloadProducts } = useAsyncData(getProducts, []);
   const {
+    control,
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
   } = useForm({ defaultValues });
+  const { fields, append, remove } = useFieldArray({ control, name: "items" });
   const [message, setMessage] = useState(null);
 
   async function onSubmit(values) {
@@ -35,16 +36,15 @@ export default function Orders() {
     try {
       await createOrder({
         customer_id: Number(values.customer_id),
-        items: [
-          {
-            product_id: Number(values.product_id),
-            quantity: Number(values.quantity),
-          },
-        ],
+        items: values.items.map((item) => ({
+          product_id: Number(item.product_id),
+          quantity: Number(item.quantity),
+        })),
       });
       reset(defaultValues);
       setMessage({ type: "success", text: "Order created successfully." });
       await reload();
+      await reloadProducts();
     } catch (err) {
       setMessage({ type: "error", text: getApiError(err) });
     }
@@ -80,29 +80,47 @@ export default function Orders() {
             </select>
             <span>{errors.customer_id?.message}</span>
           </label>
-          <label>
-            Product
-            <select {...register("product_id", { required: "Product is required." })}>
-              <option value="">Select product</option>
-              {products?.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name} ({product.quantity_in_stock} in stock)
-                </option>
-              ))}
-            </select>
-            <span>{errors.product_id?.message}</span>
-          </label>
-          <label>
-            Quantity
-            <input
-              type="number"
-              {...register("quantity", {
-                required: "Quantity is required.",
-                min: { value: 1, message: "Quantity must be at least 1." },
-              })}
-            />
-            <span>{errors.quantity?.message}</span>
-          </label>
+          <div className="order-items">
+            {fields.map((field, index) => (
+              <div className="order-item-row" key={field.id}>
+                <label>
+                  Product
+                  <select {...register(`items.${index}.product_id`, { required: "Product is required." })}>
+                    <option value="">Select product</option>
+                    {products?.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name} ({product.quantity_in_stock} in stock)
+                      </option>
+                    ))}
+                  </select>
+                  <span>{errors.items?.[index]?.product_id?.message}</span>
+                </label>
+                <label>
+                  Quantity
+                  <input
+                    type="number"
+                    {...register(`items.${index}.quantity`, {
+                      required: "Quantity is required.",
+                      min: { value: 1, message: "Quantity must be at least 1." },
+                    })}
+                  />
+                  <span>{errors.items?.[index]?.quantity?.message}</span>
+                </label>
+                {fields.length > 1 ? (
+                  <button type="button" className="button button-ghost button-small" onClick={() => remove(index)}>
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={() => append({ product_id: "", quantity: 1 })}
+          >
+            Add Product
+          </button>
           <button className="button button-primary" disabled={isSubmitting}>
             Create Order
           </button>

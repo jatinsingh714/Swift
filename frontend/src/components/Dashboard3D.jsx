@@ -1,7 +1,6 @@
 import { Float, OrbitControls } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 
 function InventoryBox({ position, color, scale = 1 }) {
   const meshRef = useRef();
