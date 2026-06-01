@@ -73,7 +73,7 @@ class OrderRead(BaseModel):
     customer_id: int
     total_amount: Decimal
     created_at: datetime
-    items: list[OrderItemRead] = []
+    items: list[OrderItemRead] = Field(default_factory=list)
 
 
 class DashboardStats(BaseModel):

@@ -1,13 +1,28 @@
 import os
+import time
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import OperationalError
 
 from . import models
 from .database import Base, engine
 from .routers import customers, dashboard, orders, products
 
-Base.metadata.create_all(bind=engine)
+
+def init_db() -> None:
+    max_attempts = int(os.getenv("DB_INIT_RETRIES", "10"))
+    for attempt in range(1, max_attempts + 1):
+        try:
+            Base.metadata.create_all(bind=engine)
+            return
+        except OperationalError:
+            if attempt == max_attempts:
+                raise
+            time.sleep(2)
+
+
+init_db()
 
 app = FastAPI(
     title="Swift Inventory API",

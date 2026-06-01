@@ -59,7 +59,14 @@ def update_product(
 def delete_product(db: Session, product_id: int) -> None:
     product = get_product(db, product_id)
     db.delete(product)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot delete product because it is used by existing orders.",
+        ) from exc
 
 
 def create_customer(db: Session, customer: schemas.CustomerCreate) -> models.Customer:
@@ -91,7 +98,14 @@ def get_customer(db: Session, customer_id: int) -> models.Customer:
 def delete_customer(db: Session, customer_id: int) -> None:
     customer = get_customer(db, customer_id)
     db.delete(customer)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Cannot delete customer because they have existing orders.",
+        ) from exc
 
 
 def create_order(db: Session, order: schemas.OrderCreate) -> models.Order:
@@ -109,7 +123,9 @@ def create_order(db: Session, order: schemas.OrderCreate) -> models.Order:
     products = {
         product.id: product
         for product in db.scalars(
-            select(models.Product).where(models.Product.id.in_(product_ids))
+            select(models.Product)
+            .where(models.Product.id.in_(product_ids))
+            .with_for_update()
         )
     }
 
