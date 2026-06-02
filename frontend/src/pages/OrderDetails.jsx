@@ -37,19 +37,28 @@ export default function OrderDetails() {
             <article className="stat-card">
               <span>Customer</span>
               <strong>{customer?.full_name || `Customer #${order.customer_id}`}</strong>
+              <small>Assigned account</small>
             </article>
             <article className="stat-card">
               <span>Total Amount</span>
               <strong>${order.total_amount}</strong>
+              <small>Captured order value</small>
             </article>
             <article className="stat-card">
               <span>Created</span>
               <strong>{new Date(order.created_at).toLocaleString()}</strong>
+              <small>Local timestamp</small>
             </article>
           </div>
 
           <section className="panel table-panel">
-            <h3>Products</h3>
+            <div className="table-toolbar">
+              <div>
+                <span className="eyebrow">Line Items</span>
+                <h3>Products</h3>
+              </div>
+              <span className="status-badge status-live">{order.items?.length || 0} products</span>
+            </div>
             <div className="table-wrap">
               <table>
                 <thead>

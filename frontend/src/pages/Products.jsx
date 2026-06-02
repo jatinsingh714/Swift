@@ -28,6 +28,13 @@ export default function Products() {
   } = useForm({ defaultValues });
   const editingId = watch("id");
   const [message, setMessage] = useState(null);
+  const [query, setQuery] = useState("");
+
+  const filteredProducts = products?.filter((product) => {
+    const term = query.trim().toLowerCase();
+    if (!term) return true;
+    return [product.name, product.sku].some((value) => String(value).toLowerCase().includes(term));
+  });
 
   useEffect(() => {
     if (!editingId) return;
@@ -143,11 +150,25 @@ export default function Products() {
         </form>
 
         <section className="panel table-panel">
-          <h3>Product Table</h3>
+          <div className="table-toolbar">
+            <div>
+              <span className="eyebrow">Inventory</span>
+              <h3>Product Table</h3>
+            </div>
+            <label className="search-field">
+              <span>Search products</span>
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search by name or SKU"
+              />
+            </label>
+          </div>
           {loading ? <LoadingState /> : null}
           <Alert>{error}</Alert>
           {!loading && !products?.length ? <EmptyState label="No products yet." /> : null}
-          {products?.length ? (
+          {products?.length && !filteredProducts?.length ? <EmptyState label="No matching products." /> : null}
+          {filteredProducts?.length ? (
             <div className="table-wrap">
               <table>
                 <thead>
@@ -160,14 +181,22 @@ export default function Products() {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map((product) => (
+                  {filteredProducts.map((product) => (
                     <tr key={product.id}>
-                      <td>{product.name}</td>
-                      <td>{product.sku}</td>
+                      <td>
+                        <strong className="table-title">{product.name}</strong>
+                      </td>
+                      <td>
+                        <span className="sku-pill">{product.sku}</span>
+                      </td>
                       <td>${product.price}</td>
-                      <td>{product.quantity_in_stock}</td>
+                      <td>
+                        <span className={`stock-badge ${getStockTone(product.quantity_in_stock)}`}>
+                          {product.quantity_in_stock} in stock
+                        </span>
+                      </td>
                       <td className="table-actions">
-                        <button className="button button-small" onClick={() => startEdit(product)}>
+                        <button className="button button-secondary button-small" onClick={() => startEdit(product)}>
                           Edit
                         </button>
                         <button className="button button-danger button-small" onClick={() => handleDelete(product.id)}>
@@ -184,4 +213,11 @@ export default function Products() {
       </div>
     </div>
   );
+}
+
+function getStockTone(quantity) {
+  const count = Number(quantity);
+  if (count <= 5) return "stock-low";
+  if (count <= 20) return "stock-medium";
+  return "stock-high";
 }

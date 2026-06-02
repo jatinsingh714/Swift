@@ -1,10 +1,10 @@
 import { NavLink, Outlet } from "react-router-dom";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard" },
-  { to: "/products", label: "Products" },
-  { to: "/customers", label: "Customers" },
-  { to: "/orders", label: "Orders" },
+  { to: "/dashboard", label: "Dashboard", icon: "◇" },
+  { to: "/products", label: "Products", icon: "▦" },
+  { to: "/customers", label: "Customers", icon: "◉" },
+  { to: "/orders", label: "Orders", icon: "↗" },
 ];
 
 export default function AppLayout() {
@@ -15,12 +15,15 @@ export default function AppLayout() {
           <span className="brand-mark">S</span>
           <div>
             <strong>Swift</strong>
-            <small>Inventory Admin</small>
+            <small>Operations Cloud</small>
           </div>
         </div>
         <nav className="nav-list">
           {navItems.map((item) => (
             <NavLink key={item.to} to={item.to}>
+              <span className="nav-icon" aria-hidden="true">
+                {item.icon}
+              </span>
               {item.label}
             </NavLink>
           ))}
@@ -33,7 +36,10 @@ export default function AppLayout() {
             <span className="eyebrow">Production Console</span>
             <h1>Inventory & Orders</h1>
           </div>
-          <span className="status-pill">API Ready</span>
+          <span className="status-pill">
+            <span aria-hidden="true" />
+            API Ready
+          </span>
         </header>
         <section className="content-area">
           <Outlet />

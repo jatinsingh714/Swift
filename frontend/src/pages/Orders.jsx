@@ -128,7 +128,13 @@ export default function Orders() {
         </form>
 
         <section className="panel table-panel">
-          <h3>Orders Table</h3>
+          <div className="table-toolbar">
+            <div>
+              <span className="eyebrow">Fulfillment</span>
+              <h3>Orders Table</h3>
+            </div>
+            <span className="status-badge status-live">Live orders</span>
+          </div>
           {loading ? <LoadingState /> : null}
           <Alert>{error}</Alert>
           {!loading && !orders?.length ? <EmptyState label="No orders yet." /> : null}
@@ -147,12 +153,18 @@ export default function Orders() {
                 <tbody>
                   {orders.map((order) => (
                     <tr key={order.id}>
-                      <td>#{order.id}</td>
+                      <td>
+                        <strong className="table-title">#{order.id}</strong>
+                      </td>
                       <td>{getCustomerName(customers, order.customer_id)}</td>
-                      <td>${order.total_amount}</td>
-                      <td>{order.items?.length || 0}</td>
+                      <td>
+                        <strong>${order.total_amount}</strong>
+                      </td>
+                      <td>
+                        <span className="status-badge">{order.items?.length || 0} items</span>
+                      </td>
                       <td className="table-actions">
-                        <Link className="button button-small" to={`/orders/${order.id}`}>
+                        <Link className="button button-secondary button-small" to={`/orders/${order.id}`}>
                           Details
                         </Link>
                         <button className="button button-danger button-small" onClick={() => handleDelete(order.id)}>

@@ -107,10 +107,15 @@ export default function Customers() {
                 <tbody>
                   {customers.map((customer) => (
                     <tr key={customer.id}>
-                      <td>{customer.full_name}</td>
+                      <td>
+                        <div className="identity-cell">
+                          <span className="avatar">{getInitials(customer.full_name)}</span>
+                          <strong>{customer.full_name}</strong>
+                        </div>
+                      </td>
                       <td>{customer.email}</td>
                       <td>{customer.phone}</td>
-                      <td>
+                      <td className="table-actions">
                         <button className="button button-danger button-small" onClick={() => handleDelete(customer.id)}>
                           Delete
                         </button>
@@ -125,4 +130,13 @@ export default function Customers() {
       </div>
     </div>
   );
+}
+
+function getInitials(name = "") {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
 }
